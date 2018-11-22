@@ -1,0 +1,99 @@
+<html>
+	<head>
+		<title>API Project</title>
+	</head>
+	<style>
+		table, th, td {
+		    border: 1px solid black;
+		    border-collapse: collapse;
+		    text-align: center;
+		}
+	</style>
+	<body>
+		<div>
+			<h2>My Item List</h2>
+			<form>
+				<p>
+					Enter list:
+					<input type="text" class="item"/>
+					<button class="addItem" type="button">Add Item</button>
+				</p>
+			</form>
+		</div>
+		<div>
+			<table style="width:100%" id="itemtable">
+			  <tr>
+			    <th>ID</th>
+			    <th>Item</th> 
+			    <th>Date/Time Added</th>
+			    <th>Actions</th>
+			  </tr>
+			</table>
+		</div>
+	</body>
+	<script src="jquery.min.js"></script>
+	<script>
+		var apiServer = 'http://localhost:5566';
+		$.ajax({
+			url: apiServer + '/items',
+			success: function(result) {
+	        	for(var i = 0; i < result.length; i++) {
+	        		$('#itemtable').append('<tr class="' + result[i]._id + '">' + 
+		            	'<td>' + result[i]._id + '</td>' +
+		            	'<td>' + result[i].item + '</td>' + 
+		            	'<td>' + result[i].dateAdded + '</td>' +
+		            	'<td><button onclick="deleteItem(\'' + result[i]._id + '\', \'' + result[i].item + '\')">DELETE</button></td>' +
+		            '</tr>');
+	        	}
+	    	},
+	    	error: function(err) {
+				console.log('err = ', err)
+	    	}
+	    });
+
+		//Add item button action
+	    $('.addItem').click(function() {
+		  $.ajax({
+				url: apiServer + '/add',
+				type: 'POST',
+				data: { 
+					item: $('.item').val()
+				},
+				success: function(result) {
+					$('#itemtable').append('<tr class="' + result.data._id + '">' +
+		            	'<td>' + result.data._id + '</td>' +
+		            	'<td>' + result.data.item + '</td>' + 
+		            	'<td>' + result.data.dateAdded + '</td>' +
+		            	'<td><button onclick="deleteItem(\'' + result.data._id + '\', \'' + result.data.item + '\')">DELETE</button></td>' +
+		            '</tr>');
+		        	alert(result.message);
+		    	},
+		    	error: function(err) {
+					console.log('err = ', err)
+		    	}
+	    	});
+		});
+
+	    function deleteItem(id, data) {
+			var decision = confirm('Are you sure you want to delete ' + data + '?');
+
+			if(decision) {
+				$.ajax({
+				url: apiServer + '/delete',
+					type: 'DELETE',
+					data: { 
+						_id: id
+					},
+					success: function(result) {
+						$('.'+ id).remove();
+			        	alert(result.message);
+			    	},
+			    	error: function(err) {
+						console.log('err = ', err)
+			    	}
+		    	});
+
+			}
+		}
+	</script>
+<html>
